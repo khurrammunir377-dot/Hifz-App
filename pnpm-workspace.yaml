@@ -1,0 +1,10 @@
+# pnpm workspace configuration
+# onlyBuiltDependencies: explicitly allow these packages to run their install scripts.
+# This suppresses the "Ignored build scripts" warning in pnpm 10.
+onlyBuiltDependencies:
+  - esbuild
+  - unrs-resolver
+  - "@expo/ngrok"
+  - better-sqlite3
+  - canvas
+  - sharp

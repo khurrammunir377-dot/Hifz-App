@@ -1,0 +1,86 @@
+name: Deploy AI Quran Teacher
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 10.12.4
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm test
+      - run: pnpm build
+
+  deploy-web:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 10.12.4
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Deploy to Manus WebDev
+        env:
+          MANUS_API_KEY: ${{ secrets.MANUS_API_KEY }}
+        run: |
+          # Deploy command would go here
+          echo "Deploying to Manus WebDev..."
+
+  build-ios:
+    needs: test
+    runs-on: macos-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 10.12.4
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+      - run: npm install -g eas-cli
+      - run: pnpm install --frozen-lockfile
+      - name: Build iOS
+        env:
+          EAS_TOKEN: ${{ secrets.EAS_TOKEN }}
+        run: eas build --platform ios --auto-submit
+
+  build-android:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 10.12.4
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+      - run: npm install -g eas-cli
+      - run: pnpm install --frozen-lockfile
+      - name: Build Android
+        env:
+          EAS_TOKEN: ${{ secrets.EAS_TOKEN }}
+        run: eas build --platform android --auto-submit

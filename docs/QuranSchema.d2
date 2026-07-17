@@ -1,0 +1,64 @@
+direction: right
+
+surahs: {
+  shape: sql_table
+  surah_id: int PK
+  surah_number: int UNIQUE
+  name_arabic: varchar
+  name_english: varchar
+  revelation_type: varchar
+  ayah_count: int
+}
+
+ayahs: {
+  shape: sql_table
+  ayah_id: int PK
+  surah_id: int FK
+  ayah_number: int
+  text_uthmani: text
+  juz_number: int
+  hizb_number: int
+  rub_number: int
+  manzil_number: int
+  sajda: int
+}
+
+words: {
+  shape: sql_table
+  word_id: int PK
+  ayah_id: int FK
+  word_number: int
+  arabic_text: varchar
+  translation_english: text
+  transliteration_english: text
+  normalized_arabic_text: varchar
+}
+
+lessons: {
+  shape: sql_table
+  lesson_id: int PK
+  user_id: varchar
+  surah_id: int FK
+  ayah_number_start: int
+  ayah_number_end: int
+  lesson_date: timestamp
+  status: varchar
+  notes: text
+}
+
+bookmarks: {
+  shape: sql_table
+  bookmark_id: int PK
+  user_id: varchar
+  surah_id: int FK
+  ayah_id: int FK
+  ayah_number: int
+  created_at: timestamp
+  notes: text
+}
+
+surahs.surah_id -> ayahs.surah_id
+ayahs.ayah_id -> words.ayah_id
+surahs.surah_id -> lessons.surah_id
+surahs.surah_id -> bookmarks.surah_id
+ayahs.ayah_id -> bookmarks.ayah_id
