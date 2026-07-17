@@ -45,30 +45,9 @@ jobs:
           # Deploy command would go here
           echo "Deploying to Manus WebDev..."
 
-  build-ios:
-    needs: test
-    runs-on: macos-latest
-    if: github.ref == 'refs/heads/main'
-    steps:
-      - uses: actions/checkout@v3
-      - uses: pnpm/action-setup@v3
-        with:
-          version: 10.12.4
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-          cache: 'pnpm'
-      - run: npm install -g eas-cli
-      - run: pnpm install --frozen-lockfile
-      - name: Build iOS
-        env:
-          EAS_TOKEN: ${{ secrets.EAS_TOKEN }}
-        run: eas build --platform ios --auto-submit
-
-  build-android:
+  build-android-apk:
     needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v3
       - uses: pnpm/action-setup@v3
@@ -78,9 +57,21 @@ jobs:
         with:
           node-version: '20'
           cache: 'pnpm'
-      - run: npm install -g eas-cli
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
       - run: pnpm install --frozen-lockfile
-      - name: Build Android
-        env:
-          EAS_TOKEN: ${{ secrets.EAS_TOKEN }}
-        run: eas build --platform android --auto-submit
+      - name: Generate native Android project
+        run: npx expo prebuild --platform android --no-install
+      - name: Build debug APK
+        working-directory: android
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleDebug
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: hifz-app-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
