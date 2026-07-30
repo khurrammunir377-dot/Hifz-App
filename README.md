@@ -1,155 +1,77 @@
-# AI Quran Teacher
+# Hifz Companion — Phase 1 + Phase 2
 
-A comprehensive mobile application for learning and memorizing the Quran with AI-powered features, built with React Native, Expo, and TypeScript.
+A free Quran memorization app. **Phase 1** (reading, navigation, audio
+recording) plus **Phase 2** (live recitation checking: continuous
+listening, word-level mistake detection, real-time interruption cue) are
+both included in this build.
 
-## Features
+**If you're setting up recitation checking for the first time, see
+[PHASE2_SETUP.md](PHASE2_SETUP.md) first** — it needs a small backend
+piece (Supabase + Groq) before the mic button on the Recitation Screen
+will do anything beyond recording.
 
-- **Complete Quran Database:** Word-by-word Uthmani script with English translations and transliterations
-- **Intelligent Search:** Arabic-normalized search across all Quranic text
-- **Lesson Management:** Create and track personalized lessons
-- **Bookmarks:** Save favorite verses for quick access
-- **Cross-Platform:** Available on Web, iOS, and Android
-- **Offline Support:** Access Quran data offline (coming soon)
-- **AI-Powered Analysis:** Tajweed and pronunciation analysis (coming soon)
+## What's included
 
-## Quick Start
+- Full, authentic Quran text (6,236 verses, 114 Surahs, all 30 Juz), sourced
+  from an established open Quran text dataset (Uthmani script) — bundled as
+  a local asset so the app works fully offline.
+- Home screen (30 Juz list + Continue Last Session)
+- Surah list per Juz
+- Recitation screen: Arabic text display, verse navigation, audio recording,
+  playback, re-record
+- Settings screen: font size, dark mode, reference-audio toggle placeholder,
+  Support This App placeholder
+- Local SQLite storage for recordings (offline, on-device only)
 
-### Prerequisites
+## How the build works (same pattern as your UUDS app)
 
-- Node.js 20+
-- pnpm (this project uses pnpm exclusively — see `packageManager` in `package.json` and `pnpm-lock.yaml`; using `npm` or `yarn` will produce a broken/mismatched install)
-- Expo CLI (for mobile development)
+This repo does **not** commit the `android/` platform folder. Instead, the
+GitHub Actions workflow (`.github/workflows/build.yml`) generates it fresh
+on every build using `flutter create`, matched exactly to the Flutter
+version running in CI — then copies in the custom app icon and Android
+manifest (microphone permission, app name) from `android_overlay/`. This
+avoids the SDK-version-mismatch and stale-Gradle-file issues you hit on the
+last project, since the Android scaffold is never out of date with the
+Flutter version.
 
-### Installation
+## Steps to build your APK
 
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/ai-quran-teacher.git
-cd ai-quran-teacher
+1. **Create a new GitHub repository** (e.g. `hifz-companion`)
+2. **Upload all these files**, keeping the folder structure exactly as-is
+   (unzip and push, or upload via GitHub's web uploader — just make sure
+   `.github/workflows/build.yml` ends up at that exact path)
+3. Go to the **Actions** tab in your repo — the workflow will run
+   automatically on push to `main` (or trigger it manually via
+   "Run workflow" if it doesn't auto-start)
+4. Wait for the build to finish (~5-8 minutes for the first run)
+5. Click the completed run → under **Artifacts**, download
+   `hifz-companion-apk`
+6. Unzip that download to get `app-release.apk`
+7. Transfer it to your phone (WhatsApp/email/USB) and install
+   (you may need to allow "install from unknown sources" once)
 
-# Install dependencies
-pnpm install
+## Testing checklist once installed
 
-# Set up environment variables
-cp .env.example .env
-# Edit .env with your database credentials
-```
+- [ ] App opens and shows the 30 Juz list
+- [ ] Tapping a Juz shows the correct Surahs
+- [ ] Tapping a Surah opens the Recitation screen at Ayah 1
+- [ ] Arabic text displays correctly, right-to-left
+- [ ] Mic permission prompt appears on first recording attempt
+- [ ] Recording button works: starts, shows timer, stops
+- [ ] Playback plays back exactly what was recorded
+- [ ] Re-record and Next Verse buttons work
+- [ ] Settings: font size and dark mode changes apply
+- [ ] Closing and reopening the app keeps your last session (Continue card)
+- [ ] App works with phone in airplane mode (fully offline)
 
-### Development
+## If the build fails
 
-```bash
-# Start the development server
-pnpm dev
+Open the failed Actions run and check which step failed — paste me the
+error output and I'll fix it. Common first-run issues are usually version
+mismatches between the pinned package versions in `pubspec.yaml` and what's
+currently on pub.dev; those are quick fixes.
 
-# This will start both the backend server and Expo Metro bundler
-# Web version: http://localhost:8081
-# Backend API: http://localhost:3000
-```
+## Next step
 
-### Testing
-
-```bash
-# Run tests
-pnpm test
-
-# Lint code
-pnpm lint
-
-# Format code
-pnpm format
-```
-
-### Building
-
-```bash
-# Build backend for production
-pnpm build
-
-# Start production server
-pnpm start
-```
-
-## Deployment
-
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions for web, iOS, and Android.
-
-### Quick Deploy
-
-**Web:**
-```bash
-pnpm build
-# Deploy to Manus WebDev
-```
-
-**iOS:**
-```bash
-eas build --platform ios
-eas submit --platform ios
-```
-
-**Android:**
-```bash
-eas build --platform android
-eas submit --platform android
-```
-
-## Project Structure
-
-```
-ai-quran-teacher/
-├── app/                    # React Native/Expo screens
-├── server/                 # Backend API and services
-│   ├── db/                # Database schema and migrations
-│   ├── utils/             # Utilities (Arabic normalization, etc.)
-│   └── _core/             # Core server setup
-├── docs/                  # Documentation
-├── assets/                # App icons and images
-├── app.json               # Expo configuration
-├── eas.json               # EAS Build configuration
-└── package.json           # Dependencies
-```
-
-## Database
-
-The app uses MySQL with Drizzle ORM. Database schema includes:
-
-- **Surahs:** Quranic chapters with metadata
-- **Ayahs:** Verses with Uthmani text and classifications
-- **Words:** Word-by-word data with translations
-- **Lessons:** User lesson progress tracking
-- **Bookmarks:** User bookmarked verses
-
-## API
-
-The app exposes a tRPC API with the following main endpoints:
-
-- `quran.getSurahs()` - Get all Surahs
-- `quran.searchQuran()` - Search Quranic text
-- `quran.createLesson()` - Create a lesson
-- `quran.createBookmark()` - Bookmark a verse
-
-See [docs/QuranKnowledgeEngine.md](./docs/QuranKnowledgeEngine.md) for complete API documentation.
-
-## Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Support
-
-For issues, questions, or suggestions, please open an issue on GitHub or contact us at support@manus.im.
-
-## Acknowledgments
-
-- Quranic data sourced from verified Islamic repositories
-- Built with [Expo](https://expo.dev), [React Native](https://reactnative.dev), and [TypeScript](https://www.typescriptlang.org)
-- Database powered by [Drizzle ORM](https://orm.drizzle.team) and [MySQL](https://www.mysql.com)
+Once you've checked everything above on your real phone, come back and I'll
+give you the Phase 2 prompt/code (word-level mistake detection).
