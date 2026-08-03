@@ -121,7 +121,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           SwitchListTile(
             title: const Text('Real-Time Mistake Cue'),
-            subtitle: const Text('Sound + vibration the instant a mistake is detected'),
+            subtitle: const Text(
+              'For Juz Amma: plays the real reciter saying the correct word. '
+              'Elsewhere: a short tone + vibration, until full Quran coverage is added.',
+            ),
             value: _interruptionCue,
             onChanged: (value) async {
               setState(() => _interruptionCue = value);

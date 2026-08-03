@@ -1,7 +1,7 @@
 name: hifz_companion
-description: "Hifz Companion - Quran Memorization App (Phase 1-3 + Polish)"
+description: "Hifz Companion - Quran Memorization App (+ Qari Correction Audio Pilot)"
 publish_to: 'none'
-version: 0.3.0+3
+version: 0.4.0+4
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
@@ -29,4 +29,5 @@ flutter:
   uses-material-design: true
   assets:
     - assets/data/quran_data.json
+    - assets/data/qari_word_timings_juz_amma.json
     - assets/audio/mistake_tone.wav

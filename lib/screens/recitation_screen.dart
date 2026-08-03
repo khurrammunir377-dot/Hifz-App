@@ -7,6 +7,7 @@ import '../models/quran_models.dart';
 import '../services/alignment/alignment_models.dart';
 import '../services/db_helper.dart';
 import '../services/quran_repository.dart';
+import '../services/qari_audio_service.dart';
 import '../services/recitation_check_service.dart';
 import '../services/settings_service.dart';
 import '../theme/app_theme.dart';
@@ -64,7 +65,7 @@ class _RecitationScreenState extends State<RecitationScreen>
         _teacherFeedback = update.teacherFeedback;
       });
       if (update.newMistakeDetectedThisUpdate && _cueEnabled) {
-        _triggerMistakeCue();
+        _triggerMistakeCue(update.latestError);
       }
     });
   }
@@ -86,8 +87,22 @@ class _RecitationScreenState extends State<RecitationScreen>
     await SettingsService.instance.setLastSession(ayah.surah, ayah.ayah);
   }
 
-  Future<void> _triggerMistakeCue() async {
+  Future<void> _triggerMistakeCue(RecitationError? error) async {
     HapticFeedback.mediumImpact();
+
+    // Try the real Qari correction audio first (Juz Amma pilot only) -
+    // falls back to the generic tone automatically if this specific word
+    // isn't covered yet, or if the ayah audio couldn't be downloaded
+    // (e.g. no internet).
+    if (error != null && error.wordIndexInAyah != null) {
+      final played = await QariAudioService.instance.playWord(
+        surah: error.surahNumber,
+        ayah: error.ayahNumber,
+        wordIndex: error.wordIndexInAyah!,
+      );
+      if (played) return;
+    }
+
     try {
       await _player.play(ap.AssetSource('audio/mistake_tone.wav'));
     } catch (_) {
